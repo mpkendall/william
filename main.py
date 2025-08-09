@@ -19,7 +19,7 @@ class App(badge.BaseApp):
 
     def on_open(self):
         badge.display.fill(1)
-        image = badge.display.import_pbm("apps/William/sprites.pbm")
+        image = badge.display.import_pbm("apps/William/blank.pbm")
         badge.display.blit(image, 0, 0)
         badge.display.show()
 
