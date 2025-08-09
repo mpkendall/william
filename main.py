@@ -85,7 +85,7 @@ class App(badge.BaseApp):
         else:
             if self.old_button_h:
                 print("Button H pressed")
-                badge.radio.send_packet(0x5128, b'location:shelbrooke')
+                badge.radio.send_packet(0x5128, b'location:sherbrooke')
             self.old_button_h = False
 
         if badge.input.get_button(badge.input.Buttons.SW13):
@@ -121,9 +121,29 @@ class App(badge.BaseApp):
             self.old_button_l = False
 
         if self.received_message:
-            badge.display.fill(1)
-            badge.display.text(f"Received: {self.received_message}", 0, 0, 0)
-            badge.display.show()
+            image_map = {
+                "have:cable": "dongle.pbm",
+                "have:writing": "paper.pbm",
+                "have:food": "food.pbm",
+                "have:charge": "charger.pbm",
+                "come:sos": "sos.pbm",
+                "come:assist": "assistance.pbm",
+                "come:bored": "bored.pbm",
+                "location:sherbrooke": "sherbrooke.pbm",
+                "location:main": "main-dorms.pbm",
+                "location:dining": "dining-hall.pbm",
+                "location:dock": "dock.pbm",
+                "location:waterfront": "waterfront.pbm",
+            }
+        
+            if self.received_message in image_map:
+                image_path = f"apps/william/{image_map[self.received_message]}"
+                fb = badge.display.import_pbm(image_path)
+                badge.display.fill(1)
+                badge.display.blit(fb, 0, 0)
+                badge.display.show()
+            else:
+                print(f"?? {self.received_message}")
             print(f"Received packet: {self.received_message}")
             asyncio.create_task(self.notify())
             self.received_message = None
@@ -172,7 +192,6 @@ class App(badge.BaseApp):
         Asynchronously notify the user of a new message.
         """
 
-        # is this the right way to do this?
         await self.siren()
         await self.ring()
         await self.siren()
