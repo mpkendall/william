@@ -1,0 +1,6 @@
+{
+    "displayName": "William",
+    "logoPath": "william.pbm",
+    "permissions": ["notifications:write", "rawHardware:write", "radio:write", "uart:write", "contacts:write"],
+    "appNumber": 24550
+}  
