@@ -1,4 +1,4 @@
-import badge
+import badge, asyncio
 
 class App(badge.BaseApp):
     def __init__(self):
@@ -15,9 +15,12 @@ class App(badge.BaseApp):
         self.old_button_k = False
         self.old_button_l = False
 
+        self.received_message = None
+
     def on_open(self):
-        badge.display.fill(1) 
-        badge.display.text("William Daniel", 0, 0, 0)
+        badge.display.fill(1)
+        image = badge.display.import_pbm("apps/william/sprites.pbm")
+        badge.display.blit(image, 0, 0)
         badge.display.show()
 
     def loop(self):
@@ -117,8 +120,59 @@ class App(badge.BaseApp):
                 badge.radio.send_packet(0x5128, b'location:waterfront')
             self.old_button_l = False
 
+        if self.received_message:
+            badge.display.fill(1)
+            badge.display.text(f"Received: {self.received_message}", 0, 0, 0)
+            badge.display.show()
+            print(f"Received packet: {self.received_message}")
+            asyncio.create_task(self.notify())
+            self.received_message = None
+
     def on_packet(self, packet: badge.radio.Packet, in_foreground: bool):
-        badge.display.fill(1)
-        badge.display.text(f"{packet.data}", 0, 0, 0)
-        badge.display.show()
-        print(f"Received packet: {packet}")
+        self.received_message = packet.data
+
+    async def siren(self) -> None:
+        """
+        Siren the LED to indicate a new message.
+        This async function runs on the OS thread - make sure it yields properly.
+        """
+        for i in range(0, 65535, 5000):
+            badge.utils.set_led_pwm(i)
+            await asyncio.sleep(0.05)
+        badge.utils.set_led(True)
+        for i in range(65535, 0, -5000):
+            badge.utils.set_led_pwm(i)
+            await asyncio.sleep(0.05)
+        badge.utils.set_led_pwm(0)
+
+    async def ring(self) -> None:
+        """
+        Ring the buzzer to indicate a new message.
+        This async function runs on the OS thread - make sure it yields properly.
+        """
+        # siren the buzzer - for loop with audible tones
+        badge.buzzer.tone(523, 0.5)  # C5
+        await asyncio.sleep(0.1)
+        badge.buzzer.tone(392, 0.25)  # G4
+        await asyncio.sleep(0.05)
+        badge.buzzer.tone(392, 0.25)  # G4
+        await asyncio.sleep(0.05)
+        badge.buzzer.tone(415, 0.5)  # G#4
+        await asyncio.sleep(0.1)
+        badge.buzzer.tone(392, 0.5)  # G4
+        await asyncio.sleep(0.6)
+        badge.buzzer.tone(493, 0.5)  # B4
+        await asyncio.sleep(0.1)
+        badge.buzzer.tone(523, 0.5)  # C5
+        await asyncio.sleep(0.1)
+        badge.buzzer.no_tone()
+        
+    async def notify(self) -> None:
+        """
+        Asynchronously notify the user of a new message.
+        """
+
+        # is this the right way to do this?
+        await self.siren()
+        await self.ring()
+        await self.siren()
