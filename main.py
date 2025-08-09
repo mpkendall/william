@@ -121,6 +121,7 @@ class App(badge.BaseApp):
             self.old_button_l = False
 
         if self.received_message:
+            message = self.received_message.decode("utf-8")
             image_map = {
                 "have:cable": "dongle.pbm",
                 "have:writing": "paper.pbm",
@@ -135,16 +136,16 @@ class App(badge.BaseApp):
                 "location:dock": "dock.pbm",
                 "location:waterfront": "waterfront.pbm",
             }
-        
-            if self.received_message in image_map:
-                image_path = f"apps/William/{image_map[self.received_message]}"
-                fb = badge.display.import_pbm(image_path)
+
+            if message in image_map:
+                image_path = f"apps/William/{image_map[message]}"
                 badge.display.fill(1)
+                fb = badge.display.import_pbm(image_path)
                 badge.display.blit(fb, 0, 0)
                 badge.display.show()
             else:
-                print(f"?? {self.received_message}")
-            print(f"Received packet: {self.received_message}")
+                print(f"?? {message}")
+            print(f"Received packet: {message}")
             asyncio.create_task(self.notify())
             self.received_message = None
 
