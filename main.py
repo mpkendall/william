@@ -19,7 +19,7 @@ class App(badge.BaseApp):
 
     def on_open(self):
         badge.display.fill(1)
-        image = badge.display.import_pbm("apps/william/sprites.pbm")
+        image = badge.display.import_pbm("apps/William/sprites.pbm")
         badge.display.blit(image, 0, 0)
         badge.display.show()
 
@@ -137,7 +137,7 @@ class App(badge.BaseApp):
             }
         
             if self.received_message in image_map:
-                image_path = f"apps/william/{image_map[self.received_message]}"
+                image_path = f"apps/William/{image_map[self.received_message]}"
                 fb = badge.display.import_pbm(image_path)
                 badge.display.fill(1)
                 badge.display.blit(fb, 0, 0)
